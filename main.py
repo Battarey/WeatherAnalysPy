@@ -1,8 +1,5 @@
-import functions # For site requests
+import functions as f 
 
-
-
-
-def choiseSourceInformation(nickname):
-    print('q')
-
+f.clearConsole()
+print('Welcome to app for weather analysis!')
+f.authorization()
