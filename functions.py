@@ -6,6 +6,7 @@ from config import API_KEY # Api key for openweathermap
 from config import DB_CONFIG # Config for DB
 
 # Попробовать сделать авторизацию через айпи или аккаунт
+# Для запоминания по IP в SQL можно использовать Exists  
 
 def clearConsole():
     os.system('cls')
