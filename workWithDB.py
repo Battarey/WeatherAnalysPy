@@ -22,14 +22,14 @@ class Database:
             )
             self.cur = self.conn.cursor()
         except Exception as e:
-            print(f"Error with DB! {e}")
+            print(f'Error with DB! {e}')
 
     def execute_query(self, query, params=None):
         try:
             self.cur.execute(query, params)
             return self.cur.fetchall()
         except Exception as e:
-            print(f"Error executing the query: {e}")
+            print(f'Error executing the query: {e}')
 
     def close(self):
         if self.cur:

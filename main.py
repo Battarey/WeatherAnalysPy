@@ -1,5 +1,12 @@
-import functions as f 
+# import functions as f 
 
-f.clearConsole()
-print('Welcome to app for weather analysis!')
-f.authorization()
+# nick = "user1"
+
+# f.clearConsole()
+# #print('Welcome to app for weather analysis!')
+# # f.enterCityName()
+# f.enterCountryName()
+
+
+
+
