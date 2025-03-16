@@ -1,6 +1,7 @@
 import requests as rq # For site requests
 import os # To clean console
 import time as t # To sleep function
+from datetime import datetime # To get the current time and date
 from workWithDB import Database # For work with DB
 from config import API_KEY_OpenWeatherMap # Api key for openweathermap
 from config import API_KEY_WeatherApi # Api key for weatherapi
@@ -9,7 +10,11 @@ from config import DB_CONFIG # Config for DB
 def clearConsole():
     os.system('cls')
 
-# sql request dont work
+def getTime():
+    now = datetime.now()
+    formatted_time = now.strftime('%Y-%m-%d %H:%M:%S')
+    return formatted_time
+
 def authorization():
     nickname = input("Input your nickname: ")
     password = input("Input your password: ")
@@ -65,7 +70,7 @@ def enterCityName(api, nickname):
         getWeatherCity_WeatherApi(city, nickname)
     else:
         print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation(nickname)
-    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu()
+    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu(api, nickname)
 def enterCitiesName(api, nickname):
     print('Enter names separated by commas, no more than 5, otherwise the app itself will reduce it to 5')
     cities_input = input('Enter the cities name: ')
@@ -112,9 +117,8 @@ def enterCountryName(api, nickname):
     else:
         print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation(nickname)
 
-    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu()
+    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu(api, nickname)
 
-# для get реализовать sql запрос с записью что пользователь искал
 def getWeatherCity_OpenWeather(city, nickname):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY_OpenWeatherMap}&units=metric"
     response = rq.get(url)
@@ -128,9 +132,16 @@ def getWeatherCity_OpenWeather(city, nickname):
         print(f"Weather in {city_name}:")
         print(f"Temperature: {temperature}°C")
         print(f"Description: {description}")
+
+        timerequest = getTime()
+
+        db = Database(DB_CONFIG)
+        db.connect()
+        db.saveRequest(nickname, city, temperature, description, timerequest)
+        db.close()
     else:
         print("City not found. Please check the name you entered.")
-def getWeatherCity_WeatherApi(city, nickname): 
+def getWeatherCity_WeatherApi(city, nickname):
     base_url = 'http://api.weatherapi.com/v1/current.json'
     url = f'{base_url}?key={API_KEY_WeatherApi}&q={city}'
     response = rq.get(url)
@@ -142,5 +153,12 @@ def getWeatherCity_WeatherApi(city, nickname):
         temperature = data['current']['temp_c']
         condition = data['current']['condition']['text']
         print(f'Weather at {location}: {temperature}°C, {condition}')
+
+        timerequest = getTime()
+
+        db = Database(DB_CONFIG)
+        db.connect()
+        db.saveRequest(nickname, city, temperature, condition, timerequest)
+        db.close()
     else:
         print(f'Error {response.status_code}: {response.text}')

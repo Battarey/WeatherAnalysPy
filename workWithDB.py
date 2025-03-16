@@ -1,4 +1,5 @@
 import psycopg2 # For work PGAdmin and SQL
+from psycopg2 import sql
 from config import DB_CONFIG # Config
 
 class Database:
@@ -27,13 +28,18 @@ class Database:
     def execute_query(self, query, *params):
         try:
             self.cur.execute(query, params)
-            return self.cur.fetchall()
+            return self.cur.fetchone()[0]
         except Exception as e:
             print(f'Error executing the query: {e}')
 
-    # ip/nick, city, temperature, description, timeofrequest, API
-    def saveRequest(nick, city, temperature, description, timerequest):
-        print('q')
+    # nick, city, temperature, description, timeofrequest, API
+    def saveRequest(self, nick, city, temperature, description, timerequest):
+        insert_query = sql.SQL("""
+            INSERT INTO UsersRequests (UsersRequests_cityAtRequest, UsersRequests_temperature, UsersRequests_description, UsersRequests_timeOfRequest, users_nickname)
+            VALUES (%s, %s, %s, %s, %s);
+        """)
+        self.cur.execute(insert_query, (city, temperature, description, timerequest, nick))
+        self.conn.commit()
 
     def close(self):
         if self.cur:
