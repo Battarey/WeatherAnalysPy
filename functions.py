@@ -6,91 +6,84 @@ from config import API_KEY_OpenWeatherMap # Api key for openweathermap
 from config import API_KEY_WeatherApi # Api key for weatherapi
 from config import DB_CONFIG # Config for DB
 
-# Попробовать сделать авторизацию через айпи или аккаунт
-# Для запоминания по IP в SQL можно использовать Exists  
-
 def clearConsole():
     os.system('cls')
-    
+
+# sql request dont work
 def authorization():
-    choise = ('Do you want to log in? 1 - yes, 2 - no')
-    if choise == '1':
-        # sql requery for login
+    nickname = input("Input your nickname: ")
+    password = input("Input your password: ")
 
-        print('')
-    elif choise == '2':
-        # sql requery for ip
-        clearConsole(), mainMenu()
+    db = Database(DB_CONFIG)
+    db.connect()
+    query = """
+    SELECT EXISTS(
+        SELECT 1 FROM Users 
+        WHERE users_nickname = %s AND users_password = %s
+    );
+    """
+    queryBool = db.execute_query(query, nickname, password)
+    if queryBool:
+        print(f"Successfully authorization, {nickname}!"), db.close(), t.sleep(3), choiseSourceInformation(nickname)
     else:
-        print('Incorreect input! Try again!'), t.sleep(4), clearConsole(), authorization()
+        print('Incorrect login or password! Try again!'), db.close(), t.sleep(4), clearConsole(), authorization()
 
-    # db = Database(DB_CONFIG)
-    # db.connect()
-    # try:
-    #     rows = db.execute_query("SELECT * FROM Users")
-    #     for row in rows:
-    #         print(row) 
-    # except Exception as e:
-    #     print(f"An error occurred during the authorization process: {e}")
-    # finally:
-    #     db.close()
-
-def choiseSourceInformation():
+def choiseSourceInformation(nickname):
     print('Select where you want your data supplied from:')
     print('1 - Open Weather Map')
     print('2 - Weather Api')
     choise = input('Your choise: ')
     if choise == '1':
         api = 'open'
-        print('You chose Open Weather Map! Lets go!'), t.sleep(4), clearConsole(), mainMenu(api)
+        print('You chose Open Weather Map! Lets go!'), t.sleep(4), clearConsole(), mainMenu(api, nickname)
     elif choise == '2':
         api = 'weather'
-        print('You chose Open Weather Map! Lets go!'), t.sleep(4), clearConsole(), mainMenu(api)
+        print('You chose Open Weather Map! Lets go!'), t.sleep(4), clearConsole(), mainMenu(api, nickname)
     else: 
-        print('Incorrect input! Try again!'), t.sleep(4), clearConsole(), choiseSourceInformation()
+        print('Incorrect input! Try again!'), t.sleep(4), clearConsole(), choiseSourceInformation(nickname)
 
-def mainMenu(api):
+def mainMenu(api, nickname):
     print('Choise your operation:')
     print('1 - Displaying information about one city')
     print('2 - Displaying information about several cities')
     print('3 - Displaying information about the main cities of the country')
     choise = input('Your choise: ')
     if choise == '1':
-        enterCityName(api)
+        enterCityName(api, nickname)
     elif choise == '2':
-        enterCitiesName(api)
+        enterCitiesName(api, nickname)
     elif choise == '3':
-        enterCountryName(api)
+        enterCountryName(api, nickname)
     else:
-        print('Incorrect input! Try again!'), t.sleep(4), clearConsole, mainMenu(api)
+        print('Incorrect input! Try again!'), t.sleep(4), clearConsole, mainMenu(api, nickname)
 
-def enterCityName(api):
+def enterCityName(api, nickname):
     city = input("Enter the city name: ")
     if api == 'open':
-        getWeatherCity_OpenWeather(city)
+        getWeatherCity_OpenWeather(city, nickname)
     elif api == 'weather':
-        getWeatherCity_WeatherApi(city)
+        getWeatherCity_WeatherApi(city, nickname)
     else:
-        print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation()
+        print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation(nickname)
     pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu()
-def enterCitiesName(api):
+def enterCitiesName(api, nickname):
     print('Enter names separated by commas, no more than 5, otherwise the app itself will reduce it to 5')
     cities_input = input('Enter the cities name: ')
     cities = [city.strip() for city in cities_input.split(",")][:5]
     if api == 'open':
         for city in cities:
             print(f'\nGetting weather for {city}:')
-            getWeatherCity_OpenWeather(city)
+            getWeatherCity_OpenWeather(city, nickname)
     elif api == 'weather':
             print(f'\nGetting weather for {city}:')
-            getWeatherCity_WeatherApi(city)
+            getWeatherCity_WeatherApi(city, nickname)
     else:
-        print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation()
-    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu()
-def enterCountryName(api):
+        print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation(nickname)
+    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu(api, nickname)
+def enterCountryName(api, nickname):
     print('As an output, the weather in the country will display the weather in the main cities of the country you selected.')
     print('Countries to choose from: RU, UK, DE, ES, IT')
-    choiseCountry = input('')
+    choiseCountry = input('Your choise: ')
     if choiseCountry.upper() == 'RU':
         print('You have chosen Russia!')
         citiesOfCountry = ['Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Nizhny Novgorod']
@@ -107,21 +100,22 @@ def enterCountryName(api):
         print('You have chosen Italy!')
         citiesOfCountry = ['Rome', 'Milan', 'Naples', 'Turin', 'Florence']
     else: 
-        print('Not correct input! Try again!'), t.sleep(4), clearConsole(), enterCountryName()
+        print('Not correct input! Try again!'), t.sleep(4), clearConsole(), enterCountryName(nickname)
     
     if api == 'open':
         for city in citiesOfCountry:
             print(f"\nGetting weather for {city}, {choiseCountry.upper()}:")
-            getWeatherCity_OpenWeather(city)
+            getWeatherCity_OpenWeather(city, nickname)
     elif api == 'weather':
             print(f"\nGetting weather for {city}, {choiseCountry.upper()}:")
-            getWeatherCity_WeatherApi(city)
+            getWeatherCity_WeatherApi(city, nickname)
     else:
-        print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation()
+        print('Error app!'), t.sleep(4), clearConsole(), choiseSourceInformation(nickname)
 
     pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu()
 
-def getWeatherCity_OpenWeather(city):
+# для get реализовать sql запрос с записью что пользователь искал
+def getWeatherCity_OpenWeather(city, nickname):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY_OpenWeatherMap}&units=metric"
     response = rq.get(url)
     
@@ -136,7 +130,7 @@ def getWeatherCity_OpenWeather(city):
         print(f"Description: {description}")
     else:
         print("City not found. Please check the name you entered.")
-def getWeatherCity_WeatherApi(city): 
+def getWeatherCity_WeatherApi(city, nickname): 
     base_url = 'http://api.weatherapi.com/v1/current.json'
     url = f'{base_url}?key={API_KEY_WeatherApi}&q={city}'
     response = rq.get(url)

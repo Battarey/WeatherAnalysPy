@@ -24,12 +24,16 @@ class Database:
         except Exception as e:
             print(f'Error with DB! {e}')
 
-    def execute_query(self, query, params=None):
+    def execute_query(self, query, *params):
         try:
             self.cur.execute(query, params)
             return self.cur.fetchall()
         except Exception as e:
             print(f'Error executing the query: {e}')
+
+    # ip/nick, city, temperature, description, timeofrequest, API
+    def saveRequest(nick, city, temperature, description, timerequest):
+        print('q')
 
     def close(self):
         if self.cur:
