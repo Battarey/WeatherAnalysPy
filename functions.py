@@ -27,7 +27,7 @@ def authorization():
         WHERE users_nickname = %s AND users_password = %s
     );
     """
-    queryBool = db.execute_query(query, nickname, password)
+    queryBool = db.execute_queryOne(query, nickname, password)
     if queryBool:
         print(f"Successfully authorization, {nickname}!"), db.close(), t.sleep(3), choiseSourceInformation(nickname)
     else:
@@ -52,6 +52,7 @@ def mainMenu(api, nickname):
     print('1 - Displaying information about one city')
     print('2 - Displaying information about several cities')
     print('3 - Displaying information about the main cities of the country')
+    print('4 - View your search history')
     choise = input('Your choise: ')
     if choise == '1':
         enterCityName(api, nickname)
@@ -59,6 +60,8 @@ def mainMenu(api, nickname):
         enterCitiesName(api, nickname)
     elif choise == '3':
         enterCountryName(api, nickname)
+    elif choise == '4':
+        getAllUserRequests(api, nickname)
     else:
         print('Incorrect input! Try again!'), t.sleep(4), clearConsole, mainMenu(api, nickname)
 
@@ -162,3 +165,12 @@ def getWeatherCity_WeatherApi(city, nickname):
         db.close()
     else:
         print(f'Error {response.status_code}: {response.text}')
+
+def getAllUserRequests(api, nickname):
+    db = Database(DB_CONFIG)
+    db.connect()
+    query = "SELECT usersrequests_id, usersrequests_cityatrequest, usersrequests_temperature, usersrequests_description, TO_CHAR(usersrequests_timeofrequest, 'YYYY-MM-DD HH24:MI:SS') AS timestamp, users_nickname FROM UsersRequests WHERE users_nickname = %s;"
+    db.executeAndPrint_queryMany(query, nickname)
+    db.close()
+
+    pressEnter = input('\nPress Enter to go to the main menu'), clearConsole, mainMenu(api, nickname)
